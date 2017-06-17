@@ -1,0 +1,42 @@
+<?php
+
+namespace $MODEL_NAME$;
+
+use Illuminate\Support\ServiceProvider;
+
+class $MODEL_NAME$ServiceProvider extends ServiceProvider
+{
+
+    public function boot()
+    {
+        $this->app->bind('$MODEL_NAME$',function($app){
+            return new $MODEL_NAME$;
+        });
+
+        // Define Router file
+        require __DIR__ . '/Route/routes.php';
+
+        // Define path for view files
+        $this->loadViewsFrom(__DIR__.'/View','$MODEL_NAME$View');
+
+        // Define path for translation
+        $this->loadTranslationsFrom(__DIR__.'/Lang','$MODEL_NAME$Lang');
+
+        // Define Published migrations files
+        $this->publishes([
+            __DIR__.'/Migration' => database_path('migrations'),
+        ], 'migrations');
+
+        // Define Published Asset files
+        $this->publishes([
+            __DIR__.'/Asset' => public_path('assets/'),
+        ], 'public');
+
+    }
+
+
+    public function register()
+    {
+        //
+    }
+}

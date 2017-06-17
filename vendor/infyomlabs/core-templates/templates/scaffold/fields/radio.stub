@@ -1,0 +1,5 @@
+<div class="radio radio-info radio-inline">
+    <input {{(isset($edit$MODEL_NAME$['$FIELD_NAME$'])&&$edit$MODEL_NAME$['$FIELD_NAME$']=="$VALUE$")||!isset($edit$MODEL_NAME$['$FIELD_NAME$']) ? 'checked' : ''}} id="active" value="$VALUE$" type="radio" name="$FIELD_NAME$"   class="">
+    <label for="$FIELD_NAME_TITLE$"> $VALUE$</label>
+</div>
+

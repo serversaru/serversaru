@@ -1,0 +1,10 @@
+{
+    "name": "$MODEL_NAME$",
+    "authors": [
+        {
+            "name": "yep template",
+            "email": "info@yeptemplate.com"
+        }
+    ],
+    "require": {}
+}

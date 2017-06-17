@@ -1,0 +1,68 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+
+class $MODEL_NAME$ extends Migration
+{
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+    #####start_up_function#####
+        Schema::create('$TABLE_NAME$', function (Blueprint $table) {
+            $table->increments('id');
+            $FIELDS$
+        });
+        ###Add to module table
+		        /**
+         * role permission
+         */
+        $perm_id=DB::table('permissions')->insertGetId(
+            array('name' => 'view_$MODEL_NAME$','display_name' => 'view_$MODEL_NAME$')
+        );
+        DB::table('permission_role')->insert(
+            array('permission_id' =>$perm_id,'role_id' => 1)
+        );
+        $perm_id=DB::table('permissions')->insertGetId(
+            array('name' => 'add_$MODEL_NAME$','display_name' => 'add_$MODEL_NAME$')
+        );
+        DB::table('permission_role')->insert(
+            array('permission_id' =>$perm_id,'role_id' => 1)
+        );
+        $perm_id=DB::table('permissions')->insertGetId(
+            array('name' => 'edit_$MODEL_NAME$','display_name' => 'edit_$MODEL_NAME$')
+        );
+        DB::table('permission_role')->insert(
+            array('permission_id' =>$perm_id,'role_id' => 1)
+        );
+        $perm_id=DB::table('permissions')->insertGetId(
+            array('name' => 'delete_$MODEL_NAME$','display_name' => 'delete_$MODEL_NAME$')
+        );
+        DB::table('permission_role')->insert(
+            array('permission_id' =>$perm_id,'role_id' => 1)
+        );
+     #####end_up_function#####
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+     #####start_down_function#####
+        DB::table('permissions')->where('name',  'view_$MODEL_NAME$')->delete();
+        DB::table('permissions')->where('name',  'add_$MODEL_NAME$')->delete();
+        DB::table('permissions')->where('name',  'edit_$MODEL_NAME$')->delete();
+        DB::table('permissions')->where('name',  'delete_$MODEL_NAME$')->delete();
+        ######remove primary key
+        Schema::drop('$TABLE_NAME$');
+     #####end_down_function#####
+    }
+}

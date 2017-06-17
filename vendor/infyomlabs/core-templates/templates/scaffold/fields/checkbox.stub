@@ -1,0 +1,14 @@
+<div class="form-group">
+	<label class="col-sm-3 control-label" for="form-field-1">
+		$FIELD_NAME_TITLE$
+	</label>
+	<div   class="col-sm-9">
+		<div class="checkbox checkbox-primary">
+		    <input type="hidden" name="$FIELD_NAME$" value="0">
+			<input {{isset($edit$MODEL_NAME$['$FIELD_NAME$'])&&$edit$MODEL_NAME$['$FIELD_NAME$']=='$VALUE$' ? 'checked' : ''}} id="$FIELD_NAME$" value="$VALUE$" type="checkbox" name="$FIELD_NAME$">
+	 		<label for="$FIELD_NAME$">
+			</label>
+		</div>
+
+	</div>
+</div>

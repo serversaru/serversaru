@@ -1,0 +1,256 @@
+<?php
+
+namespace $MODEL_NAME$\Controller;
+
+
+use $MODEL_NAME$\Model\$MODEL_NAME$;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\admin\Module;
+use App\admin\ModuleAlbum;
+use App\Http\Controllers\Controller;
+use Regulus\ActivityLog\Models\Activity;
+use Validator;
+use Illuminate\Http\Request;
+use File;
+use App\Http\Requests;
+use Illuminate\Pagination\Paginator;
+use Zizaco\Entrust\Traits\EntrustTrait;
+use Nicolaslopezj\Searchable\SearchableTrait;
+#####use
+class $MODEL_NAME$Controller extends Controller
+{
+        use SearchableTrait;
+    //  use EntrustUserTrait ;
+	
+    /**
+     * @param Request $request
+     * @return string
+     * Export Excel & CSV & PDF
+     */
+    public function export_excel(Request $request){
+        #### $request['export_type'] is export mode  "EXCEL or CSV"
+        ### Check export PDF permission
+        if($request['export_type']=='pdf'&& !Auth::user()->can('export_pdf') )
+            return 'You not have this permission';
+        ### Check export CSV permission
+        if($request['export_type']=='csv'&& !Auth::user()->can('export_csv') )
+            return 'You not have this permission';
+        ### Check export EXCEL permission
+        if($request['export_type']=='xls'&& !Auth::user()->can('export_xls') )
+            return 'You not have this permission';
+        if ($request['serach_txt']) {
+            $$MODEL_NAME$ = $MODEL_NAME$::search($request['serach_txt'], null, false)->get();
+        } else {  ###other
+            $$MODEL_NAME$ = $MODEL_NAME$::all();
+        }  if($request['export_type']=='pdf'){ //export PDF
+            $html='<h1 style="text-align: center">YEP test pdf </h1>';
+            $html .= '<style>
+						table, th, td {text-align: center;}
+						th, td {padding: 5px;}
+						th {color: #43A047;border-color: black;background-color: #C5E1A5}
+						</style>
+						<table border="2" style="width:100%;">
+						<tr>
+							<th>Title</th>
+							<th>Created date</th>
+						</tr>';
+            foreach ($$MODEL_NAME$ as $cat ){
+
+                $html .="<tr>
+							<td>$cat->title</td>
+							<td>$cat->created_at</td>
+						  </tr>";
+            }
+			$html .= '</table>';
+            $pdf = App::make('dompdf.wrapper');
+            $pdf->loadHTML($html);
+            return $pdf->download('$MODEL_NAME$.pdf');
+        }else { // export excel & csv
+            Excel::create('$MODEL_NAME$', function ($excel) use ($$MODEL_NAME$) {
+                $excel->sheet('Sheet 1', function ($sheet) use ($$MODEL_NAME$) {
+                    $sheet->fromArray($$MODEL_NAME$);
+                });
+            })->download($request['export_type']);
+        }
+    }
+	
+ 
+    /**
+     * @param Request $request
+     * @return mixed
+     * Search and paging
+     */
+    public function search(Request $request)
+    {
+        #####relation
+        $currentPage = $request['page']; // You can set this to any page you want to paginate to
+        Paginator::currentPageResolver(function () use ($currentPage) {
+            return $currentPage;
+        });
+        if ($request['paging'] > 0)
+            $limit = $request['paging'];
+        else
+            $limit = 10;
+        ### search
+        if ($request['serach_txt']) {
+            $$MODEL_NAME$ = $MODEL_NAME$::search($request['serach_txt'], null, false)->get();
+            $page = $request->has('page') ? $request->page - 1 : 0;
+            $total = $$MODEL_NAME$->count();
+            $$MODEL_NAME$ = $$MODEL_NAME$->slice($page * $limit, $limit);
+            $$MODEL_NAME$ = new \Illuminate\Pagination\LengthAwarePaginator($$MODEL_NAME$, $total, $limit);
+        } else {  ###other
+            $$MODEL_NAME$ = $MODEL_NAME$::paginate($limit);
+        }
+        return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->with(['request' => $request, 'tab' =>1, '$MODEL_NAME$' => $$MODEL_NAME$]);
+    }
+	
+    /**
+     * @return mixed
+     */
+    public function index()
+    {
+        #####relation
+        if(Auth::user()->can("view_$MODEL_NAME$")) {
+            $module_menus=app('App\Http\Controllers\admin\CrudBuilderController')->createMenumodule();
+            $$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+            return view("$MODEL_NAME$View::$MODEL_NAME$")->with(['module_menus'=>$module_menus,'tab' => 1, '$MODEL_NAME$' => $$MODEL_NAME$]);
+        }else{
+            return redirect('404');
+        }
+    }
+	
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function store(Request $request)
+    {
+         $module_id=\Request::segment(2);
+         $module_id=Module::where('link_name',$module_id)->first();
+         $Module_type_id=$module_id->id;
+         #####relation
+		$$MODEL_NAME$=new $MODEL_NAME$;
+        if(Auth::user()->can("add_$MODEL_NAME$")){  #####check permission
+			if($$MODEL_NAME$->rules){
+				$validator = Validator::make($request->all(), $$MODEL_NAME$->rules);
+				if ($validator->fails()) {
+					$back$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+					return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->withErrors($validator)->with(['$MODEL_NAME$'=>$back$MODEL_NAME$,'tab'=>2,'edit$MODEL_NAME$'=>$request->all()]);
+				}
+			}
+
+	 	    $$MODEL_NAME$=$MODEL_NAME$::create($request->all());
+	 	     Activity::log([
+                'contentId'   => $$MODEL_NAME$->id,
+                'contentType' => '$MODEL_NAME$',
+                'action'      => 'Create',
+                'description' => 'Created a $MODEL_NAME$',
+                'details'     => 'Username: '.Auth::user()->name,
+             ]);
+			####Upload image
+	 	    ####Multi upload image
+            ######store
+            $$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+            return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->with(['tab'=>1,'flag'=>3,'$MODEL_NAME$'=>$$MODEL_NAME$]);
+        }else{
+            $$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+            return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->with(['tab'=>1,'flag'=>6,'$MODEL_NAME$'=>$$MODEL_NAME$]);
+        }
+
+    }
+	
+    /**
+     * @param Request $request
+     * @param $id
+     * @return mixed
+     */
+    public function edit(Request $request, $id)
+    {
+         $module_id=\Request::segment(2);
+         $module_id=Module::where('link_name',$module_id)->first();
+         $Module_type_id=$module_id->id;
+        #####relation
+        #####edit many to many
+        $$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+        $edit$MODEL_NAME$ = $MODEL_NAME$::find($id);
+        ####Edit multiple upload image
+        return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->with(['edit$MODEL_NAME$'=>$edit$MODEL_NAME$,'tab'=>2,'$MODEL_NAME$'=>$$MODEL_NAME$]);
+    }
+    /**
+     * @param Request $request
+     * @param $id
+     * @return mixed
+     */
+    public function update(Request $request, $id)
+    {
+        $module_id=\Request::segment(2);
+        $module_id=Module::where('link_name',$module_id)->first();
+        $Module_type_id=$module_id->id;
+		#####relation
+		$$MODEL_NAME$=new $MODEL_NAME$;
+        if(Auth::user()->can('edit_$MODEL_NAME$')) {  #####check permission
+			if($$MODEL_NAME$->rules){
+				$validator = Validator::make($request->all(),$$MODEL_NAME$->rules);
+				if ($validator->fails()) {
+					$back$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+					return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->withErrors($validator)->with(['tab' => 2,'$MODEL_NAME$'=>$back$MODEL_NAME$, 'edit$MODEL_NAME$' => $request->all()]);
+				}
+			}
+           $$MODEL_NAME$ = $MODEL_NAME$::find($request['id']);
+            $$MODEL_NAME$->update($request->all());
+            Activity::log([
+                'contentId'   => $$MODEL_NAME$->id,
+                'contentType' => '$MODEL_NAME$',
+                'description' => 'Update a $MODEL_NAME$',
+                'details'     => 'Username: '.Auth::user()->name,
+                'updated'     => (bool) $$MODEL_NAME$->id,
+            ]);
+			####update Multi upload image
+			####Upload image
+			######update Many to many
+            ######store
+            $back$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+            $back$MODEL_NAME$->setPath('/$MODEL_NAME$');
+            return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->with(['tab' => 1, '$MODEL_NAME$' => $back$MODEL_NAME$, 'flag' => 4]);
+        }else{
+            $back$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+            return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->with(['tab' => 1, '$MODEL_NAME$' => $back$MODEL_NAME$, 'flag' => 6]);
+        }
+    }	
+    /**
+     * @param $id
+     * @return mixed
+     */
+    public function destroy($id)
+    {
+        $module_id=\Request::segment(2);
+        $module_id=Module::where('link_name',$module_id)->first();
+        $Module_type_id=$module_id->id;
+         #####relation
+        if(Auth::user()->can('delete_$MODEL_NAME$')) {  #####check permission
+            $temp = explode(",", $id);
+            foreach ($temp as $val) {
+                if ($temp) {
+                   ### delete multi uploader
+                    $user = $MODEL_NAME$::find($val);
+                    $user->delete();
+                     Activity::log([
+                            'contentId'   => $val,
+                            'contentType' => '$MODEL_NAME$',
+                            'action'      => 'Delete',
+                            'description' => 'Delete  a $MODEL_NAME$',
+                            'details'     => 'Username: '.Auth::user()->name,
+                     ]);
+                }
+            }
+            $$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+            $$MODEL_NAME$->setPath('/$MODEL_NAME$');
+            return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->with(['tab' => 1, '$MODEL_NAME$' => $$MODEL_NAME$, 'flag' => 5]);
+        }else{
+            $$MODEL_NAME$ = $MODEL_NAME$::paginate(10);
+            return view("$MODEL_NAME$View::$MODEL_NAME$ajax")->with(['tab' => 1, '$MODEL_NAME$' => $$MODEL_NAME$, 'flag' => 6]);
+        }
+    }	
+}

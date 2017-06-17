@@ -1,0 +1,15 @@
+<?php
+Route::group(['prefix' => 'admin'], function () {
+####start
+   /*
+    |--------------------------------------------------------------------------
+    | $MODEL_NAME$  Routes
+    |--------------------------------------------------------------------------
+    |*/
+    Route::resource('$MODEL_NAME_LOWER_CASE$','$MODEL_NAME$\Controller\$MODEL_NAME$Controller');
+    Route::post('$MODEL_NAME_LOWER_CASE$/search','$MODEL_NAME$\Controller\$MODEL_NAME$Controller@search');
+	Route::post('$MODEL_NAME_LOWER_CASE$/export/excel','$MODEL_NAME$\Controller\$MODEL_NAME$Controller@export_excel');
+####end
+#####relation#####
+});
+ 

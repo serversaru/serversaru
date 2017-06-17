@@ -1,0 +1,38 @@
+<?php
+
+namespace $MODEL_NAME$\Model;
+use Nicolaslopezj\Searchable\SearchableTrait;
+use Illuminate\Database\Eloquent\Model;
+#####use
+ 
+class $MODEL_NAME$ extends Model
+{
+  use SearchableTrait;
+    public $table = '$TABLE_NAME$';
+    $TIMESTAMPS$
+	
+	 public $searchable = [
+	    'columns' => [
+            $SEARCHABLE$
+        ########relation_id
+        ],
+        ########join
+	  ];
+ 
+$PRIMARY$
+    public $fillable = [
+        $FIELDS$
+    ];
+
+ 
+
+    /**
+     * Validation rules
+     *
+     * @var array
+     */
+    public   $rules = [
+        $RULES$
+    ];
+ #####relation#####
+}

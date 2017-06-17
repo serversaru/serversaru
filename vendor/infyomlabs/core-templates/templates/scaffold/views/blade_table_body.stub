@@ -1,0 +1,6 @@
+@extends('master')
+@section('content')
+    <div id="ajax_div">
+    @include("$MODEL_NAME$View::$MODEL_NAME$ajax")
+    </div>
+@endsection

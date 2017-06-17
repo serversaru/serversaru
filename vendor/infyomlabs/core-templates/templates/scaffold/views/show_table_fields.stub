@@ -1,0 +1,1 @@
+<td data-title="$FIELD_NAME$">{{$content->$FIELD_NAME$}}</td>
